@@ -1,0 +1,122 @@
+services:
+  db:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: chinook-anon
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chinook
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d chinook"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: chinook-ollama
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "${OLLAMA_HOST_PORT:-11434}:11434"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: chinook-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c", "ollama pull ${OLLAMA_MODEL:-qwen2.5:1.5b}"]
+    restart: "no"
+
+  api:
+    build: ./api
+    container_name: chinook-api
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama-pull:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/chinook
+      ADDR: ":8080"
+      ADMIN_PASSWORD: password
+      CORS_ORIGIN: ${FRONTEND_CORS_ORIGIN:-http://localhost:23082}
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-ollama}
+      OPENAI_MODEL: ${OPENAI_MODEL:-qwen2.5:1.5b}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-http://ollama:11434/v1}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-120000}
+      MAX_QUERY_ROWS: ${MAX_QUERY_ROWS:-200}
+      MAX_SQL_LENGTH: ${MAX_SQL_LENGTH:-8000}
+    ports:
+      - "${API_HOST_PORT:-23083}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: chinook-frontend
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_PROXY_TARGET: http://api:8080
+      HMR_CLIENT_PORT: "${FRONTEND_HOST_PORT:-23082}"
+      VITE_USE_POLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "${FRONTEND_HOST_PORT:-23082}:5173"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5173/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  slides:
+    build:
+      context: ./slides
+      dockerfile: Dockerfile.dev
+    container_name: chinook-slides
+    environment:
+      HMR_CLIENT_PORT: "${SLIDES_HOST_PORT:-1234}"
+      VITE_USE_POLLING: "true"
+    volumes:
+      - ./slides:/app
+      - slides_node_modules:/app/node_modules
+    ports:
+      - "${SLIDES_HOST_PORT:-1234}:1234"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:1234/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  pgdata:
+  ollama:
+  frontend_node_modules:
+  slides_node_modules:

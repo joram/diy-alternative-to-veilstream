@@ -1,0 +1,24 @@
+# Dependencies & builds
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE / local tooling
+.idea/
+.vscode/
+.claude/
+.cursor/
+
+# Go
+api/bin/
+api/tmp/
