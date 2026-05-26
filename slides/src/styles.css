@@ -218,6 +218,60 @@ body::before {
   padding: 2rem 0;
 }
 
+.about-slide .intro-header {
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.intro-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.75rem;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .intro-header {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .intro-about .about-links {
+    text-align: center;
+  }
+}
+
+.profile-photo-link {
+  display: block;
+  line-height: 0;
+}
+
+.profile-photo {
+  width: 13.75rem;
+  height: 13.75rem;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 0.1875rem solid var(--border);
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.35);
+}
+
+.intro-about .about-name {
+  margin-bottom: 0.35rem;
+}
+
+.intro-role {
+  color: var(--accent) !important;
+  font-weight: 600;
+  font-size: 0.95rem !important;
+  margin-bottom: 0.65rem !important;
+}
+
+.intro-bio {
+  font-size: 0.95rem !important;
+  margin-bottom: 0.5rem !important;
+  max-width: 36rem;
+}
+
 .eyebrow {
   font-size: 0.8rem;
   letter-spacing: 0.12em;
@@ -242,6 +296,27 @@ body::before {
 .hint {
   font-size: 0.85rem !important;
   opacity: 0.6;
+}
+
+.repo-link {
+  margin-top: 1.5rem !important;
+  font-size: 0.9rem !important;
+}
+
+.repo-link a,
+.repo-link-large {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.repo-link a:hover,
+.repo-link-large:hover {
+  text-decoration: underline;
+}
+
+.repo-link-large {
+  font-size: 1.05rem;
+  font-weight: 500;
 }
 
 .center {
@@ -468,10 +543,15 @@ code {
 
 .diagram-figure img {
   width: 100%;
-  max-width: 320px;
+  max-width: 20rem;
   border-radius: var(--radius);
   background: #fff;
   padding: 0.5rem;
+}
+
+/* Slide images scale with A+/A− (root font-size zoom) */
+.slide img {
+  height: auto;
 }
 
 .diagram-figure figcaption {
@@ -602,6 +682,29 @@ code {
   position: absolute;
   left: 0;
   color: var(--accent);
+}
+
+.about-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.about-links {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0 !important;
+}
+
+.about-links a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.about-links a:hover {
+  text-decoration: underline;
 }
 
 .thanks-links {

@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 
+const REPO_URL = "https://github.com/joram/diy-alternative-to-veilstream";
+const SITE_URL = "https://john.oram.ca";
+const PROFILE_IMAGE = "/profile.jpg";
+
 export type Slide = {
   id: string;
   section?: string;
@@ -42,6 +46,48 @@ export const slides: Slide[] = [
           built with PostgreSQL anonymizer, dynamic masking, and RLS.
         </p>
         <p className="hint">→ or Space to advance · A+/A− font size · F fullscreen</p>
+        <p className="repo-link">
+          <a href={REPO_URL} target="_blank" rel="noreferrer">
+            github.com/joram/diy-alternative-to-veilstream
+          </a>
+        </p>
+      </div>
+    ),
+  },
+  {
+    id: "about",
+    section: "About",
+    content: (
+      <div className="about-slide">
+        <h2>About me</h2>
+        <header className="intro-header">
+          <a href={SITE_URL} target="_blank" rel="noreferrer" className="profile-photo-link">
+            <img src={PROFILE_IMAGE} alt="John Oram" className="profile-photo" />
+          </a>
+          <div className="intro-about">
+            <p className="about-name">John Oram</p>
+            <p className="intro-role">
+              Co-founder &amp; CTO, VeilStream · Victoria, BC
+            </p>
+            <p className="lead">
+              Software developer with over a decade of experience across the full stack — from cloud
+              infrastructure to user-facing apps — focused on secure, scalable systems.
+            </p>
+            <p>
+              Active in the Victoria tech community; enjoys mentoring and sharing ideas with other
+              developers.
+            </p>
+            <p className="about-links">
+              <a href={SITE_URL} target="_blank" rel="noreferrer">
+                john.oram.ca
+              </a>
+            </p>
+          </div>
+        </header>
+        <p className="muted">
+          This talk&apos;s DIY stack is what you might wire up yourself; VeilStream is the hosted layer
+          for masking, policy, and audit on preview environments.
+        </p>
       </div>
     ),
   },
@@ -319,10 +365,6 @@ SELECT * FROM (%s) AS scoped_query LIMIT %d;`}</Code>
             <span className="demo-label">Attack</span>
             <p><code>select * from customer where customer_id = 3</code></p>
           </div>
-          <div className="demo-item bad">
-            <span className="demo-label">Attack</span>
-            <p><code>select * from customer where customer_id = 4</code></p>
-          </div>
         </div>
         <p className="center lead">Run the stack: <code>docker compose up</code> → Support chat in the UI</p>
       </>
@@ -361,9 +403,16 @@ SELECT * FROM (%s) AS scoped_query LIMIT %d;`}</Code>
       <div className="slide-title">
         <h1>Questions?</h1>
         <p className="subtitle">
-          Repo: <code>diy-alternative</code> · Slides: <code>./slides</code> · App: <code>docker compose up</code>
+          <a href={REPO_URL} target="_blank" rel="noreferrer" className="repo-link-large">
+            github.com/joram/diy-alternative-to-veilstream
+          </a>
         </p>
+        <p className="muted center">Run the demo: <code>docker compose up</code></p>
         <div className="thanks-links">
+          <a href={REPO_URL} target="_blank" rel="noreferrer">
+            GitHub repo
+          </a>
+          <span className="dot">·</span>
           <a href="https://postgresql-anonymizer.readthedocs.io/" target="_blank" rel="noreferrer">
             PG Anonymizer docs
           </a>
