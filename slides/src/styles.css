@@ -5,29 +5,29 @@
 }
 
 :root {
-  /* VeilStream marketing site (www.veilstream.com HubSpot theme tokens) */
-  --vs-surface: #112231;
-  --vs-body: #192e41;
-  --vs-text: #fafafa;
-  --vs-text-muted: #b8bfd1;
-  --vs-primary: #bbc8de;
-  --vs-accent-slate: #52688f;
-  --vs-link: #149cb2;
+  /* VeilStream app theme tokens (app.veilstream.com) */
+  --vs-surface: #001e47; /* primary-900 */
+  --vs-body: #002d5c; /* primary-100 */
+  --vs-text: #f0f4ff; /* primary-50 */
+  --vs-text-muted: #86bedf; /* primary-700 */
+  --vs-primary: #a8d3eb; /* primary-800 */
+  --vs-accent-slate: #1a5a9d; /* primary-300 */
+  --vs-link: #00d9ff; /* accent-500 */
 
   --bg: var(--vs-surface);
   --bg-elevated: var(--vs-body);
-  --bg-card: #1e3a52;
+  --bg-card: #003d7a; /* primary-200 */
   --text: var(--vs-text);
   --text-muted: var(--vs-text-muted);
   --accent: var(--vs-link);
-  --accent-dim: #0f7a8c;
+  --accent-dim: #20e0d9; /* accent-400 */
   --warn: #f4a261;
   --danger: #e76f6f;
   --support: var(--vs-accent-slate);
-  --llm: #9393eb;
+  --llm: #5d9dd9; /* primary-500 */
   --border: rgba(255, 255, 255, 0.1);
-  --accent-soft: rgba(20, 156, 178, 0.14);
-  --support-soft: rgba(82, 104, 143, 0.18);
+  --accent-soft: rgba(0, 217, 255, 0.14);
+  --support-soft: rgba(26, 90, 157, 0.2);
   --font: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans",
     sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
