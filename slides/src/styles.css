@@ -5,19 +5,31 @@
 }
 
 :root {
-  --bg: #0a0e17;
-  --bg-elevated: #121a2b;
-  --bg-card: #161f33;
-  --text: #e8edf7;
-  --text-muted: #8b9bb8;
-  --accent: #3dd6c3;
-  --accent-dim: #2a9d8f;
+  /* VeilStream marketing site (www.veilstream.com HubSpot theme tokens) */
+  --vs-surface: #112231;
+  --vs-body: #192e41;
+  --vs-text: #fafafa;
+  --vs-text-muted: #b8bfd1;
+  --vs-primary: #bbc8de;
+  --vs-accent-slate: #52688f;
+  --vs-link: #149cb2;
+
+  --bg: var(--vs-surface);
+  --bg-elevated: var(--vs-body);
+  --bg-card: #1e3a52;
+  --text: var(--vs-text);
+  --text-muted: var(--vs-text-muted);
+  --accent: var(--vs-link);
+  --accent-dim: #0f7a8c;
   --warn: #f4a261;
   --danger: #e76f6f;
-  --support: #6c9eff;
-  --llm: #c77dff;
-  --border: rgba(255, 255, 255, 0.08);
-  --font: "DM Sans", system-ui, sans-serif;
+  --support: var(--vs-accent-slate);
+  --llm: #9393eb;
+  --border: rgba(255, 255, 255, 0.1);
+  --accent-soft: rgba(20, 156, 178, 0.14);
+  --support-soft: rgba(82, 104, 143, 0.18);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans",
+    sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
   --radius: 12px;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
@@ -43,8 +55,8 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(61, 214, 195, 0.12), transparent),
-    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(108, 158, 255, 0.08), transparent);
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(20, 156, 178, 0.14), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(82, 104, 143, 0.2), transparent);
   pointer-events: none;
   z-index: 0;
 }
@@ -121,7 +133,7 @@ body::before {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
-  background: rgba(61, 214, 195, 0.12);
+  background: var(--accent-soft);
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
 }
@@ -281,7 +293,7 @@ body::before {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent), var(--support));
+  background: linear-gradient(135deg, var(--vs-link), var(--vs-primary));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -362,7 +374,7 @@ code {
 .code-block code {
   background: none;
   padding: 0;
-  color: #b8d4f0;
+  color: var(--vs-primary);
   white-space: pre;
 }
 
@@ -395,7 +407,7 @@ code {
 }
 
 .card-safe {
-  border-color: rgba(61, 214, 195, 0.25);
+  border-color: rgba(20, 156, 178, 0.35);
 }
 
 .use-case-grid {
@@ -474,7 +486,7 @@ code {
 
 .flow-node.highlight {
   border-color: var(--accent);
-  box-shadow: 0 0 24px rgba(61, 214, 195, 0.2);
+  box-shadow: 0 0 24px rgba(20, 156, 178, 0.25);
 }
 
 .flow-arrow {
@@ -505,7 +517,7 @@ code {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: rgba(61, 214, 195, 0.15);
+  background: var(--accent-soft);
   color: var(--accent);
   font-weight: 700;
   font-size: 0.9rem;
@@ -526,9 +538,9 @@ code {
   font-size: 0.85rem;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
-  background: rgba(108, 158, 255, 0.15);
-  color: var(--support);
-  border: 1px solid rgba(108, 158, 255, 0.3);
+  background: var(--support-soft);
+  color: var(--vs-primary);
+  border: 1px solid rgba(82, 104, 143, 0.45);
 }
 
 .pill-warn {
@@ -577,9 +589,9 @@ code {
 
 .chat-bubble.user {
   align-self: flex-end;
-  background: rgba(108, 158, 255, 0.2);
+  background: var(--support-soft);
   color: var(--text);
-  border: 1px solid rgba(108, 158, 255, 0.3);
+  border: 1px solid rgba(82, 104, 143, 0.45);
 }
 
 .chat-bubble.user.danger {
