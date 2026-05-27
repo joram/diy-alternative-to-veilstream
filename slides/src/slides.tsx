@@ -407,6 +407,21 @@ SELECT * FROM (%s) AS scoped_query LIMIT %d;`}</Code>
             github.com/joram/diy-alternative-to-veilstream
           </a>
         </p>
+        <p className="lead center">Contact</p>
+        <ul style={{ textAlign: "left", maxWidth: "36rem", margin: "0 auto 1.25rem" }}>
+          <li>@john in yyjtech Slack</li>
+          <li>
+            <a href="mailto:john@veilstream.com">john@veilstream.com</a> (work)
+          </li>
+          <li>
+            <a href="mailto:john@oram.ca">john@oram.ca</a> (personal)
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/john-oram/" target="_blank" rel="noreferrer">
+              linkedin.com/in/john-oram
+            </a>
+          </li>
+        </ul>
         <p className="muted center">Run the demo: <code>docker compose up</code></p>
         <div className="thanks-links">
           <a href={REPO_URL} target="_blank" rel="noreferrer">
