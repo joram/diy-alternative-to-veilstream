@@ -6,6 +6,7 @@ Postgres image and init scripts for the Chinook demo with [PostgreSQL Anonymizer
 
 - `Dockerfile` — Dalibo `postgresql_anonymizer` base image
 - `initdb/` — scripts run on first container start (alphabetical order):
+  - `01-load-chinook.sql` — Chinook schema/data (runs against `POSTGRES_DB=chinook`; no `DROP DATABASE`)
   - `02-internal-company-data.sql` — wholesale `unit_cost`, `internal_notes`
   - `03-enable-anon.sql` — extension setup
   - `04-mask-pii.sql` — PII and internal column mask labels

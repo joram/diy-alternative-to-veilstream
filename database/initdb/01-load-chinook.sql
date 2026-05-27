@@ -13,20 +13,8 @@
            will be lost when this file is regenerated.
 ********************************************************************************/
 
-/*******************************************************************************
-   Drop database if it exists
-********************************************************************************/
-DROP DATABASE IF EXISTS chinook;
-
-
-/*******************************************************************************
-   Create database
-********************************************************************************/
-CREATE DATABASE chinook;
-
-
-\c chinook;
-
+-- docker-entrypoint-initdb.d runs this script while connected to POSTGRES_DB (chinook).
+-- Do not DROP/CREATE the active database; the upstream Chinook script assumes a fresh DB.
 
 /*******************************************************************************
    Create Tables
