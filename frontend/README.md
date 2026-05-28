@@ -12,9 +12,11 @@ React + TypeScript + Material UI static app for the Chinook music store demo. Al
 
 The browser never sends `customer_id` for support queries. The Go API binds `app.customer_id` from the session, rewrites SQL to `mask.*`, injects row filters, validates read-only `SELECT`/`WITH`, and runs `BEGIN READ ONLY` with optional `support_reader` RLS. Malicious SQL from the chat box is expected; defense is server-side.
 
-### Ollama (Docker Compose)
+### LLM (Docker Compose)
 
-Compose starts `ollama`, pulls `qwen2.5:1.5b`, and configures the **api** service at `http://ollama:11434/v1`. First `docker compose up` may take a few minutes while the model downloads. Set `OLLAMA_MODEL` in `.env` for `ollama-pull` and `OPENAI_MODEL` on **api**.
+Copy `.env.example` to `.env` and set `OPENAI_API_KEY` (default provider) or `ANTHROPIC_API_KEY` with `LLM_PROVIDER=anthropic`. The **api** service turns natural-language questions into scoped SQL via the configured model.
+
+Optional local Ollama: `docker compose --profile ollama up` with `LLM_PROVIDER=ollama` and `OPENAI_BASE_URL=http://ollama:11434/v1`.
 
 ## Prerequisites
 

@@ -216,9 +216,9 @@ func (a *API) supportStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{
-		"llmEnabled": a.Cfg.LLMProvider == "ollama" || a.Cfg.OpenAIAPIKey != "",
+		"llmEnabled": a.Cfg.LLMEnabled(),
 		"provider":   a.Cfg.LLMProvider,
-		"model":      a.Cfg.OpenAIModel,
+		"model":      a.Cfg.LLMModel(),
 		"baseUrl":    strings.TrimSuffix(a.Cfg.OpenAIBaseURL, "/v1"),
 		"scopedSQL":  true,
 	})
@@ -268,32 +268,39 @@ func (a *API) supportChat(w http.ResponseWriter, r *http.Request) {
 
 	sqlText := msg
 	var llmNote string
+	querySource := "direct"
 	if !support.IsDirectSQL(msg) {
 		if canon, ok := support.CanonicalSQL(msg); ok {
 			sqlText = canon
+			querySource = "canonical"
 		} else {
-		llmCfg := support.Config{
-			Provider: a.Cfg.LLMProvider,
-			APIKey:   a.Cfg.OpenAIAPIKey,
-			BaseURL:  a.Cfg.OpenAIBaseURL,
-			Model:    a.Cfg.OpenAIModel,
-			Timeout:  a.Cfg.LLMTimeout(),
+			querySource = "llm"
+			raw, err := support.Chat(r.Context(), a.Cfg.LLMConfig(), nil, msg)
+			if err != nil {
+				httpx.Error(w, http.StatusBadGateway, "llm: "+err.Error())
+				return
+			}
+			sqlText = support.ExtractSQL(raw)
+			llmNote = raw
+			if sqlText == "" {
+				httpx.JSON(w, http.StatusOK, map[string]any{
+					"reply":     raw,
+					"toolsUsed": []string{},
+				})
+				return
+			}
 		}
-		raw, err := support.Chat(r.Context(), llmCfg, nil, msg)
-		if err != nil {
-			httpx.Error(w, http.StatusBadGateway, "llm: "+err.Error())
-			return
+	}
+
+	chatPayload := func(extra map[string]any) map[string]any {
+		out := map[string]any{
+			"attemptedSql": sqlText,
+			"querySource":  querySource,
 		}
-		sqlText = support.ExtractSQL(raw)
-		llmNote = raw
-		if sqlText == "" {
-			httpx.JSON(w, http.StatusOK, map[string]any{
-				"reply":    raw,
-				"toolsUsed": []string{},
-			})
-			return
+		for k, v := range extra {
+			out[k] = v
 		}
-		}
+		return out
 	}
 
 	res, err := query.ExecuteCustomerReadOnly(
@@ -302,20 +309,24 @@ func (a *API) supportChat(w http.ResponseWriter, r *http.Request) {
 		query.ExecInfo{Source: "support/chat", ViewMode: string(sess.ViewMode)},
 	)
 	if err != nil {
-		httpx.JSON(w, http.StatusOK, map[string]any{
+		errPayload := map[string]any{
 			"reply":     friendlyQueryError(err),
 			"error":     err.Error(),
 			"toolsUsed": []string{"scoped_query"},
-		})
+		}
+		if res.ScopedSQL != "" {
+			errPayload["scopedSql"] = res.ScopedSQL
+		}
+		httpx.JSON(w, http.StatusOK, chatPayload(errPayload))
 		return
 	}
 
 	reply := formatQueryReply(res, llmNote)
-	httpx.JSON(w, http.StatusOK, map[string]any{
-		"reply":      reply,
-		"toolsUsed":  []string{"scoped_query"},
+	httpx.JSON(w, http.StatusOK, chatPayload(map[string]any{
+		"reply":       reply,
+		"toolsUsed":   []string{"scoped_query"},
 		"queryResult": res,
-	})
+	}))
 }
 
 func friendlyQueryError(err error) string {

@@ -331,6 +331,141 @@ body::before {
   font-weight: 500;
 }
 
+.intro-line {
+  font-size: 0.95rem !important;
+  margin: -0.5rem auto 1.25rem !important;
+}
+
+.repo-callout {
+  margin-top: 1rem !important;
+  font-size: 0.95rem !important;
+}
+
+.repo-callout a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.repo-callout a:hover {
+  text-decoration: underline;
+}
+
+.uc-req-heading {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 1rem 0 0.5rem;
+}
+
+.uc-req-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.uc-req-list li {
+  margin-bottom: 0.35rem;
+}
+
+.shared-req {
+  margin-top: 1.25rem !important;
+  font-size: 0.9rem !important;
+}
+
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.65rem 1.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.check-grid li {
+  padding: 0.65rem 0.85rem 0.65rem 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+  font-size: 0.95rem;
+}
+
+.check-grid li::before {
+  content: "✓";
+  position: absolute;
+  left: 0.75rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.control-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.95rem;
+}
+
+.control-table th,
+.control-table td {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.control-table th {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.control-table td:first-child {
+  font-weight: 600;
+  color: var(--text);
+  width: 28%;
+  white-space: nowrap;
+}
+
+.control-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.takeaway-slide {
+  max-width: 40rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.takeaway-slide h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+.takeaway-slide p {
+  font-size: 1.2rem;
+  line-height: 1.55;
+  margin: 0 0 1rem;
+}
+
+.takeaway-lead {
+  font-size: 1.45rem !important;
+}
+
+.takeaway-emphasis {
+  font-size: 1.35rem !important;
+  color: var(--vs-primary);
+  margin-top: 1.5rem !important;
+}
+
 .center {
   text-align: center;
 }

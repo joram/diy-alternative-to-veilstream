@@ -89,7 +89,7 @@ func ExecuteCustomerReadOnly(
 			_ = tx.Rollback(ctx)
 			entry.RejectReason = classifyRejectReason(err)
 			entry.Err = err.Error()
-			return Result{}, fmt.Errorf("execute: %w", err)
+			return Result{ScopedSQL: scoped}, fmt.Errorf("execute: %w", err)
 		}
 
 		fds := rows.FieldDescriptions()

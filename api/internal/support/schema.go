@@ -7,6 +7,8 @@ const schemaContext = `
 
 Query only these tables. Do not use schema prefixes (e.g. mask.) — the server rewrites names.
 
+**Table names are singular:** invoice, invoice_line, track, album, artist, customer, genre — never invoices, tracks, etc.
+
 ### customer
 - customer_id (PK)
 - first_name, last_name, company
@@ -38,7 +40,7 @@ Query only these tables. Do not use schema prefixes (e.g. mask.) — the server 
 
 ### artist
 - artist_id (PK)
-- name
+- name (there is no artist_name column — use ar.name with alias ar)
 
 ### genre
 - genre_id (PK)
@@ -54,12 +56,20 @@ Query only these tables. Do not use schema prefixes (e.g. mask.) — the server 
 
 ## Join rules
 - To include track, album, artist, or genre, always join through invoice_line (and usually invoice).
+- If you reference invoice columns (invoice_date, total, invoice_id on the invoice row), you **must** JOIN invoice in the FROM clause — do not reference alias i or invoice columns without joining that table.
 - Example: purchases with track and album titles:
   FROM invoice_line il
+  JOIN invoice i ON i.invoice_id = il.invoice_id
   JOIN track t ON t.track_id = il.track_id
   JOIN album al ON al.album_id = t.album_id
   JOIN artist ar ON ar.artist_id = al.artist_id
 - Aggregates (SUM, COUNT) on invoice.total or invoice_line columns are fine.
+
+## Aliases (critical)
+- Declare every alias in FROM / JOIN before using it in SELECT, WHERE, GROUP BY, or ORDER BY.
+- Use the **same** alias everywhere — if you write FROM invoice i, use only i.column, never bare invoice.column mixed with i, and never i if you never joined invoice i.
+- Wrong: FROM invoice_line il ... WHERE i.invoice_date = ... (no i in FROM).
+- Right: FROM invoice_line il JOIN invoice i ON i.invoice_id = il.invoice_id WHERE i.invoice_date = ...
 
 ## Columns you cannot use
 - employee, playlist, media_type, playlist_track tables
@@ -73,7 +83,10 @@ func buildSystemPrompt() string {
 		"- SELECT only. One statement. No comments.\n" +
 		"- Use only tables and columns from the schema below.\n" +
 		"- Do not filter by customer_id — the server adds that automatically.\n" +
-		"- Use table aliases on joins; every alias in SELECT/WHERE/ORDER BY must match the FROM clause exactly (e.g. FROM invoice inv → use inv.column only, never i or i2).\n" +
+		"- Use exact Chinook table names (singular): invoice, invoice_line, track, album, artist, customer, genre.\n" +
+		"- Every table alias used in SELECT/WHERE/GROUP BY/ORDER BY must be declared in FROM/JOIN first; never reference `i`, `inv`, etc. unless that alias appears in FROM/JOIN on the same query level.\n" +
+		"- Use real column names from the schema (e.g. artist.name, not artist_name; track.name, not track_title unless you AS alias it).\n" +
+		"- Before finishing, mentally verify: each `alias.column` has a matching `FROM table alias` or `JOIN table alias`.\n" +
 		"- CTEs and subqueries are allowed when useful for correctness or clarity.\n" +
 		"- Prefer concise, valid SQL over over-optimization.\n" +
 		"- After the SQL block, add a brief friendly sentence explaining what the query returns.\n" +

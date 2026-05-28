@@ -30,6 +30,41 @@ function StepList({ items }: { items: { title: string; body?: ReactNode }[] }) {
   );
 }
 
+function RepoLink({ className }: { className?: string }) {
+  return (
+    <p className={className ?? "repo-link"}>
+      <a href={REPO_URL} target="_blank" rel="noreferrer">
+        github.com/joram/diy-alternative-to-veilstream
+      </a>
+    </p>
+  );
+}
+
+function ControlTable({
+  rows,
+}: {
+  rows: { layer: string; responsibility: string }[];
+}) {
+  return (
+    <table className="control-table">
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Responsibility</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.layer}>
+            <td>{row.layer}</td>
+            <td>{row.responsibility}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 export const slides: Slide[] = [
   {
     id: "title",
@@ -45,45 +80,11 @@ export const slides: Slide[] = [
           Two real-world patterns — customer support impersonation and an LLM chat window —
           built with PostgreSQL anonymizer, dynamic masking, and RLS.
         </p>
-        <p className="hint">→ or Space to advance · A+/A− font size · F fullscreen</p>
-        <p className="repo-link">
-          <a href={REPO_URL} target="_blank" rel="noreferrer">
-            github.com/joram/diy-alternative-to-veilstream
-          </a>
+        <p className="intro-line muted center">
+          John Oram · Co-founder &amp; CTO, VeilStream — Victoria, BC
         </p>
-      </div>
-    ),
-  },
-  {
-    id: "about",
-    section: "About",
-    content: (
-      <div className="about-slide">
-        <h2>About me</h2>
-        <header className="intro-header">
-          <a href={SITE_URL} target="_blank" rel="noreferrer" className="profile-photo-link">
-            <img src={PROFILE_IMAGE} alt="John Oram" className="profile-photo" />
-          </a>
-          <div className="intro-about">
-            <p className="about-name">John Oram</p>
-            <p className="intro-role">
-              Co-founder &amp; CTO, VeilStream · Victoria, BC
-            </p>
-            <p className="lead">
-              Software developer with over a decade of experience across the full stack — from cloud
-              infrastructure to user-facing apps — focused on secure, scalable systems.
-            </p>
-            <p>
-              Active in the Victoria tech community; enjoys mentoring and sharing ideas with other
-              developers.
-            </p>
-            <p className="about-links">
-              <a href={SITE_URL} target="_blank" rel="noreferrer">
-                john.oram.ca
-              </a>
-            </p>
-          </div>
-        </header>
+        <p className="hint">→ or Space to advance · A+/A− font size · F fullscreen</p>
+        <RepoLink />
       </div>
     ),
   },
@@ -94,42 +95,30 @@ export const slides: Slide[] = [
       <>
         <h2>Why this talk?</h2>
         <p className="lead">
-          I built this repo as <strong>competitive analysis</strong> — a working DIY version of the
-          same problem VeilStream solves — and thought it was worth sharing openly.
+          Instead of hand-waving about safe DB access, I <strong>built the DIY version</strong> —
+          a realistic, production-shaped stack you can run, break, and compare.
         </p>
         <div className="two-col">
-          <div className="card card-warn">
-            <h3>What I set out to learn</h3>
+          <div className="card card-safe">
+            <h3>What this repo is</h3>
             <ul>
-              <li>What teams actually wire up when they roll their own safe DB access</li>
-              <li>Where masking, RLS, and scoped SQL get painful to operate</li>
-              <li>What a credible DIY stack looks like end-to-end</li>
+              <li>Working code: masking, RLS, restricted roles, scoped queries</li>
+              <li>Same use cases teams actually ship — support view and in-app LLM chat</li>
+              <li>Honest operational cost — not a slide-deck architecture diagram</li>
             </ul>
           </div>
-          <div className="card card-safe">
-            <h3>Why share it</h3>
+          <div className="card card-warn">
+            <h3>What you will take away</h3>
             <ul>
-              <li>Side-by-side with VeilStream — same patterns, different operational model</li>
-              <li>Honest look at build vs. buy for preview envs and production-like data</li>
-              <li>Useful whether you DIY, use VeilStream, or mix both</li>
+              <li>Which controls matter and where they live in the stack</li>
+              <li>How they drift as schema, teams, and products change</li>
+              <li>When DIY is reasonable — and when the burden outgrows the team</li>
             </ul>
           </div>
         </div>
         <p className="muted center">
-          This deck is the DIY path in code; VeilStream is the hosted layer for masking, policy, and
-          audit on preview environments.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "why",
-    section: "Why",
-    content: (
-      <>
-        <h2>Tour the demo project</h2>
-        <p className="lead">
-          Let's take a tour of the demo project and see how it works.
+          DIY can be educational and appropriate. The goal is an informed build-vs-buy decision —
+          not a verdict on either path.
         </p>
       </>
     ),
@@ -143,67 +132,154 @@ export const slides: Slide[] = [
         <div className="two-col">
           <div className="card card-warn">
             <h3>Teams have use cases for access</h3>
+            <p>Support needs to see the account as the customer sees it. Product wants LLM answers from live-shaped data.</p>
           </div>
           <div className="card card-safe">
             <h3>Production has secrets that must be protected</h3>
+            <p>Tenant boundaries, PII, margins, and write access cannot depend on prompts or trust alone.</p>
           </div>
         </div>
       </>
     ),
   },
   {
-    id: "overview",
-    section: "Overview",
+    id: "repo-tour",
+    section: "Demo",
     content: (
-      <div className="slide-with-rail">
-        <aside className="side-rail side-rail--animate" aria-label="Project requirements">
-          <h3>Project requirements</h3>
-          <h4>Use case 1 - Talk with a human</h4>
-          <ul>
-            <li>Support impersonation</li>
-            <li>Only show the customer's data</li>
-            <li>Prevent the support human from modifying the data</li>
-            <li>read only access ?</li>
-          </ul>
-          
-          <h4>Use case 2 - Chat with an LLM</h4>
-          <ul>
-            <li>LLM chat</li>
-            <li>Hide sensitive columns from the LLM (RLS)</li>
-            <li>Only show the customer's data</li>
-            <li>read only access</li>
-          </ul>
+      <>
+        <h2>Where the controls live in this repo</h2>
+        <p className="lead">
+          A small map of the files that implement the safety stack — clone it and follow along.
+        </p>
+        <div className="two-col align-start">
+          <Code>{`database/initdb/
+  04-mask-pii.sql
+  05-support-rls.sql
+  06-start-dynamic-masking.sql
 
-          <h4>Shared requirements</h4>
-          <ul>
-            <li>Tenant isolation</li>
-            <li>No superuser</li>
-            <li>Easy maintainability</li>
-          </ul>
-
-        </aside>
-        <div className="slide-rail-main">
-          <h2>Feature requests in the project</h2>
-          <div className="use-case-grid">
-            <article className="uc-card uc-support">
-              <span className="uc-badge">Use case 1</span>
-              <h3>Talk with a human</h3>
-              <p>
-                As a customer, I want to contact support humans about billing, orders, or account access. The support human needs
-                to see the account <em>as the customer sees it</em> to reproduce and fix the issue.
-              </p>
-            </article>
-            <article className="uc-card uc-llm">
-              <span className="uc-badge">Use case 2</span>
-              <h3>Chat with an LLM</h3>
-              <p>
-                As a user, I want to ask account questions in plain English inside the product. The app generates
-                SQL and runs it against live, production-shaped data to answer.
-              </p>
-            </article>
+api/internal/query/
+  scope.go`}</Code>
+          <div>
+            <p>
+              <strong>initdb</strong> — security labels, RLS policies, dynamic masking bootstrap.
+            </p>
+            <p>
+              <strong>scope.go</strong> — read-only execution, table allowlist, tenant predicates, query limits.
+            </p>
+            <p className="repo-callout">
+              Full demo: <code>docker compose up</code>
+            </p>
+            <RepoLink className="repo-callout" />
           </div>
         </div>
-      </div>
+      </>
+    ),
+  },
+  {
+    id: "use-cases",
+    section: "Requirements",
+    content: (
+      <>
+        <h2>Use cases and requirements</h2>
+        <div className="use-case-grid">
+          <article className="uc-card uc-support">
+            <span className="uc-badge">Use case 1</span>
+            <h3>Talk with a human</h3>
+            <p>
+              As a customer, I contact support about billing, orders, or access. The support human needs
+              to see the account <em>as the customer sees it</em> to reproduce and fix the issue.
+            </p>
+            <h4 className="uc-req-heading">Requirements</h4>
+            <ul className="uc-req-list">
+              <li>Support impersonation (scoped session)</li>
+              <li>Only that customer&apos;s data</li>
+              <li>Read-only — no accidental writes</li>
+              <li>Sensitive columns masked at read time</li>
+            </ul>
+          </article>
+          <article className="uc-card uc-llm">
+            <span className="uc-badge">Use case 2</span>
+            <h3>Chat with an LLM</h3>
+            <p>
+              As a user, I ask account questions in plain English. The app generates SQL against
+              production-shaped data to answer.
+            </p>
+            <h4 className="uc-req-heading">Requirements</h4>
+            <ul className="uc-req-list">
+              <li>LLM-generated SQL, never trusted on its own</li>
+              <li>Tenant isolation even when SQL is sloppy</li>
+              <li>Sensitive columns hidden from result sets</li>
+              <li>Read-only with hard query limits</li>
+            </ul>
+          </article>
+        </div>
+        <p className="muted center shared-req">
+          Shared: tenant isolation · no superuser · auditable access · schema changes must not silently widen exposure
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "what-safe-means",
+    section: "Safety model",
+    content: (
+      <>
+        <h2>What &ldquo;safe&rdquo; means</h2>
+        <p className="lead">Not one checkbox — a set of properties that hold together under misuse and drift.</p>
+        <ul className="check-grid">
+          <li>Tenant isolation</li>
+          <li>Sensitive column masking</li>
+          <li>Read-only execution</li>
+          <li>No superuser</li>
+          <li>Query allowlisting / scoping</li>
+          <li>Auditability</li>
+          <li>Maintainable schema evolution</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "minimum-stack",
+    section: "Safety model",
+    content: (
+      <>
+        <h2>The minimum viable safety stack</h2>
+        <p className="lead">The smallest credible bundle for production-shaped access — every layer has a job.</p>
+        <ul className="check-grid">
+          <li>Masking</li>
+          <li>RLS</li>
+          <li>Restricted DB role</li>
+          <li>API query validation</li>
+          <li>Read-only transactions</li>
+          <li>Query limits</li>
+          <li>Audit logs</li>
+        </ul>
+        <p className="muted center">
+          Skip any one of these and the rest work harder — until something slips through.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "controls-table",
+    section: "Safety model",
+    content: (
+      <>
+        <h2>Where the controls live</h2>
+        <ControlTable
+          rows={[
+            { layer: "LLM prompt", responsibility: "UX guidance, not security" },
+            { layer: "API", responsibility: "validation, scoping, limits" },
+            { layer: "Postgres roles", responsibility: "privilege boundaries" },
+            { layer: "RLS", responsibility: "tenant isolation" },
+            { layer: "Masking", responsibility: "sensitive column protection" },
+            { layer: "Audit", responsibility: "accountability" },
+          ]}
+        />
+        <p className="muted center">
+          Defense in depth: if the model or API misbehaves, Postgres still constrains what can be read.
+        </p>
+      </>
     ),
   },
   {
@@ -211,7 +287,7 @@ export const slides: Slide[] = [
     section: "Use case 1",
     content: (
       <>
-        <h2>Use case 1 - Talk with a human</h2>
+        <h2>Use case 1 — Talk with a human</h2>
         <p className="lead">
           As a support human, I want to help debug the user&apos;s problems by logging in
           &ldquo;as them.&rdquo;
@@ -326,7 +402,7 @@ SELECT anon.start_dynamic_masking();`}</Code>
     section: "Use case 1",
     content: (
       <>
-        <h2>Big Red Flags</h2>
+        <h2>Operational burden — masking</h2>
         <ul className="big-list">
           <li>
             <strong>Custom Postgres image</strong> — PGanon is not in stock Postgres; you own the
@@ -348,10 +424,6 @@ SELECT anon.start_dynamic_masking();`}</Code>
             <strong>Live infrastructure</strong> — dynamic masking is runtime ops, not a one-time
             migration.
           </li>
-          <li>
-            <strong>Package availability</strong> — <code>postgresql_anonymizer_18</code> is not on
-            every distro yet.
-          </li>
         </ul>
       </>
     ),
@@ -361,7 +433,7 @@ SELECT anon.start_dynamic_masking();`}</Code>
     section: "Use case 2",
     content: (
       <>
-        <h2>Use case 2 - Chat with an LLM</h2>
+        <h2>Use case 2 — Chat with an LLM</h2>
         <p className="lead">
           As a user, I want to ask questions in plain English; the app generates SQL and runs it against
           production-shaped data to answer my questions.
@@ -431,13 +503,12 @@ SELECT * FROM (%s) AS scoped_query LIMIT %d;`}</Code>
       </>
     ),
   },
-
   {
     id: "uc2-red-flags",
     section: "Use case 2",
     content: (
       <>
-        <h2>More Big Red Flags</h2>
+        <h2>Operational burden — LLM + RLS</h2>
         <ul className="big-list">
           <li>
             <strong>LLM creativity</strong> — models will invent joins, bypass filters, and probe
@@ -453,6 +524,131 @@ SELECT * FROM (%s) AS scoped_query LIMIT %d;`}</Code>
           </li>
         </ul>
       </>
+    ),
+  },
+  {
+    id: "failure-modes",
+    section: "Drift",
+    content: (
+      <>
+        <h2>Failure modes</h2>
+        <p className="lead">The stack works until the schema or connection setup changes — then exposure is silent.</p>
+        <div className="demo-grid">
+          <div className="demo-item bad">
+            <span className="demo-label">Drift</span>
+            <p>
+              <strong>New column, no mask.</strong> Added to <code>public.*</code>; label missing — real
+              value appears in <code>mask.*</code>.
+            </p>
+          </div>
+          <div className="demo-item bad">
+            <span className="demo-label">Drift</span>
+            <p>
+              <strong>New table, no RLS.</strong> Allowlisted in the API by mistake — LLM can read all rows.
+            </p>
+          </div>
+          <div className="demo-item bad">
+            <span className="demo-label">Misconfiguration</span>
+            <p>
+              <strong>Wrong schema / search_path.</strong> Query hits <code>public</code> instead of{' '}
+              <code>mask</code> — masking bypassed entirely.
+            </p>
+          </div>
+        </div>
+      </>
+    ),
+  },
+  {
+    id: "diy-reasonable",
+    section: "Build vs buy",
+    content: (
+      <>
+        <h2>When DIY is reasonable</h2>
+        <ul className="big-list">
+          <li>You own your Postgres runtime (custom image or self-hosted).</li>
+          <li>You can maintain masking and RLS rules as the schema evolves.</li>
+          <li>You have strong internal DB and security expertise.</li>
+          <li>You can build audit and policy review workflows.</li>
+        </ul>
+        <p className="muted center">
+          DIY is a good way to learn the control surface — even if you later outsource operations.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "diy-risky",
+    section: "Build vs buy",
+    content: (
+      <>
+        <h2>When DIY gets risky</h2>
+        <ul className="big-list">
+          <li>Managed Postgres without extension support.</li>
+          <li>Frequent schema changes across multiple services.</li>
+          <li>Multiple teams adding tables without a single policy owner.</li>
+          <li>LLM-generated SQL with weak API guardrails.</li>
+          <li>Compliance or audit requirements you cannot meet in-house.</li>
+          <li>Customer support workflows touching production data at scale.</li>
+        </ul>
+        <p className="muted center">
+          Hosted products (including VeilStream) exist to carry masking, policy, and audit — not because DIY is
+          impossible, but because keeping it correct is ongoing work.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "about",
+    section: "About",
+    content: (
+      <div className="about-slide">
+        <h2>About me</h2>
+        <header className="intro-header">
+          <a href={SITE_URL} target="_blank" rel="noreferrer" className="profile-photo-link">
+            <img src={PROFILE_IMAGE} alt="John Oram" className="profile-photo" />
+          </a>
+          <div className="intro-about">
+            <p className="about-name">John Oram</p>
+            <p className="intro-role">
+              Co-founder &amp; CTO, VeilStream · Victoria, BC
+            </p>
+            <p className="lead">
+              I build secure data-access tooling and shared this DIY stack so teams can see the controls
+              and operational cost directly — then decide what to own vs. outsource.
+            </p>
+            <p className="about-links">
+              <a href={SITE_URL} target="_blank" rel="noreferrer">
+                john.oram.ca
+              </a>
+              <span className="dot">·</span>
+              <a href={REPO_URL} target="_blank" rel="noreferrer">
+                GitHub repo
+              </a>
+            </p>
+          </div>
+        </header>
+      </div>
+    ),
+  },
+  {
+    id: "takeaway",
+    section: "Close",
+    content: (
+      <div className="takeaway-slide">
+        <h2>Takeaway</h2>
+        <p className="takeaway-lead">
+          Safe production-shaped access is <strong>not one control</strong>.
+        </p>
+        <p>
+          It is a stack: masking, RLS, restricted roles, scoped queries, limits, and audit.
+        </p>
+        <p>
+          The hard part is not making it work once.
+        </p>
+        <p className="takeaway-emphasis">
+          The hard part is keeping it correct as your schema, product, and teams change.
+        </p>
+      </div>
     ),
   },
   {
