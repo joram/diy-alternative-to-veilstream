@@ -66,9 +66,13 @@ export interface AuthState {
   viewMode: CustomerViewMode | null;
 }
 
+export type QuerySource = "llm" | "canonical" | "direct";
+
 export interface SupportChatMessage {
   role: "user" | "assistant";
   content: string;
+  /** Debug bubble: generated SQL the server is about to run / ran. */
+  debug?: boolean;
 }
 
 export interface QueryResult {
@@ -87,6 +91,11 @@ export interface SupportChatResponse {
   baseUrl?: string;
   queryResult?: QueryResult;
   error?: string;
+  /** Raw SQL before scoping — from LLM, canonical template, or pasted SELECT. */
+  attemptedSql?: string;
+  querySource?: QuerySource;
+  /** Scoped SQL when scoping succeeded but execution failed. */
+  scopedSql?: string;
 }
 
 export interface SupportStatus {

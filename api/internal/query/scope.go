@@ -68,14 +68,11 @@ func Scope(customerID int, input string, masked bool) (string, error) {
 				"%s.invoice_id IN (SELECT invoice_id FROM %s.invoice WHERE customer_id = %s)",
 				alias, schema, cid,
 			))
-		case ref.table == "track" || ref.table == "album" || ref.table == "artist" || ref.table == "genre":
-			if !refs.hasTable("invoice_line") {
-				return "", fmt.Errorf("table %q must be joined through invoice_line", ref.table)
-			}
 		}
 	}
 	if len(preds) == 0 {
-		return "", fmt.Errorf("query must reference customer, invoice, or invoice_line")
+		// Catalog-only queries (track/album/artist/genre) are allowed without customer predicates.
+		return q, nil
 	}
 	predSQL := strings.Join(preds, " AND ")
 	if loc := clauseIndex(q); loc > 0 {
@@ -98,15 +95,6 @@ type tableRef struct {
 }
 
 type tableRefs []tableRef
-
-func (t tableRefs) hasTable(name string) bool {
-	for _, r := range t {
-		if r.table == name {
-			return true
-		}
-	}
-	return false
-}
 
 func extractTables(q string, schema string) (tableRefs, error) {
 	lower := strings.ToLower(q)

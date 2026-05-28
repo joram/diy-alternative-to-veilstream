@@ -25,8 +25,49 @@ import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
-import { client, QueryResult, SupportChatMessage } from "@/api/client";
+import { client, QueryResult, QuerySource, SupportChatMessage } from "@/api/client";
 import { formatCell } from "@/utils/formatCell";
+
+function isDirectSQL(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  return t.startsWith("select") || t.startsWith("with");
+}
+
+function queryDebugLabel(source: QuerySource): string {
+  switch (source) {
+    case "llm":
+      return "LLM generated this query to run:";
+    case "canonical":
+      return "Matched template — about to run:";
+    case "direct":
+      return "About to run:";
+  }
+}
+
+const debugBubbleSx = {
+  borderRadius: 1,
+  bgcolor: "rgba(26, 35, 126, 0.05)",
+  border: 1,
+  borderColor: "rgba(26, 35, 126, 0.12)",
+} as const;
+
+function formatQueryDebug(
+  sql: string,
+  source: QuerySource,
+  opts?: { error?: string; scopedSql?: string },
+): string {
+  const lines = [queryDebugLabel(source)];
+  if (sql.trim()) {
+    lines.push("", sql.trim());
+  }
+  if (opts?.scopedSql?.trim()) {
+    lines.push("", "Scoped SQL:", opts.scopedSql.trim());
+  }
+  if (opts?.error?.trim()) {
+    lines.push("", `Rejected: ${opts.error.trim()}`);
+  }
+  return lines.join("\n");
+}
 
 const CUSTOMER_SUGGESTIONS = [
   "How much have I spent in total?",
@@ -60,6 +101,11 @@ export default function SupportChat({ variant = "customer" }: { variant?: Suppor
   const [lastQuery, setLastQuery] = useState<QueryResult | null>(null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pendingQueryDebug, setPendingQueryDebug] = useState<{
+    label: string;
+    sql: string;
+    source: QuerySource;
+  } | null>(null);
   const [llmEnabled, setLlmEnabled] = useState<boolean | null>(null);
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
@@ -83,7 +129,7 @@ export default function SupportChat({ variant = "customer" }: { variant?: Suppor
     if (open || expanded) {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }
-  }, [messages, loading, lastQuery, open, expanded]);
+  }, [messages, loading, lastQuery, pendingQueryDebug, open, expanded]);
 
   const closePanel = () => {
     setOpen(false);
@@ -101,10 +147,38 @@ export default function SupportChat({ variant = "customer" }: { variant?: Suppor
     setLoading(true);
     setError(null);
     setLastQuery(null);
+    if (isDirectSQL(trimmed)) {
+      setPendingQueryDebug({
+        label: queryDebugLabel("direct"),
+        sql: trimmed,
+        source: "direct",
+      });
+    } else {
+      setPendingQueryDebug({
+        label: "LLM is generating a SQL query to run…",
+        sql: "",
+        source: "llm",
+      });
+    }
 
     try {
       const res = await client.supportChat(trimmed, messages);
-      setMessages([...nextHistory, { role: "assistant", content: res.reply }]);
+      const assistantMessages: SupportChatMessage[] = [];
+      const sqlForDebug =
+        res.attemptedSql?.trim() || (isDirectSQL(trimmed) ? trimmed : "");
+      const ranQuery = res.toolsUsed?.includes("scoped_query") ?? false;
+      if (sqlForDebug || ranQuery || res.error) {
+        assistantMessages.push({
+          role: "assistant",
+          content: formatQueryDebug(sqlForDebug, res.querySource ?? "llm", {
+            error: res.error,
+            scopedSql: res.scopedSql ?? res.queryResult?.scoped_sql,
+          }),
+          debug: true,
+        });
+      }
+      assistantMessages.push({ role: "assistant", content: res.reply });
+      setMessages([...nextHistory, ...assistantMessages]);
       if (res.queryResult) setLastQuery(res.queryResult);
       if (res.llmEnabled !== undefined) setLlmEnabled(res.llmEnabled);
     } catch (e) {
@@ -112,6 +186,7 @@ export default function SupportChat({ variant = "customer" }: { variant?: Suppor
       setMessages(messages);
     } finally {
       setLoading(false);
+      setPendingQueryDebug(null);
     }
   };
 
@@ -121,7 +196,11 @@ export default function SupportChat({ variant = "customer" }: { variant?: Suppor
       : llmEnabled
         ? provider === "ollama"
           ? `Ollama · ${model}`
-          : `LLM · ${model || "on"}`
+          : provider === "anthropic"
+            ? `Claude · ${model}`
+            : provider === "openai"
+              ? `OpenAI · ${model}`
+              : `LLM · ${model || "on"}`
         : "SQL only";
 
   const panel = (
@@ -225,33 +304,93 @@ export default function SupportChat({ variant = "customer" }: { variant?: Suppor
                 key={i}
                 sx={{
                   alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                  maxWidth: isLarge ? "80%" : "92%",
+                  maxWidth: m.debug ? "100%" : isLarge ? "80%" : "92%",
+                  width: m.debug ? "100%" : undefined,
                 }}
               >
-                <Box
-                  sx={{
-                    px: isLarge ? 2 : 1.5,
-                    py: isLarge ? 1.5 : 1,
-                    borderRadius: 2,
-                    bgcolor: m.role === "user" ? "primary.main" : "background.paper",
-                    color: m.role === "user" ? "primary.contrastText" : "text.primary",
-                    border: m.role === "assistant" ? 1 : 0,
-                    borderColor: "divider",
-                    whiteSpace: "pre-wrap",
-                    fontSize: isLarge ? "1rem" : "0.875rem",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {m.content}
-                </Box>
+                {m.debug ? (
+                  <Box
+                    sx={{
+                      ...debugBubbleSx,
+                      px: isLarge ? 2 : 1.5,
+                      py: isLarge ? 1.5 : 1,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      fontWeight={600}
+                      color="text.secondary"
+                      sx={{ display: "block", mb: 0.5, letterSpacing: "0.06em" }}
+                    >
+                      DEBUG
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      component="pre"
+                      sx={{
+                        m: 0,
+                        fontFamily: "monospace",
+                        fontSize: isLarge ? "0.85rem" : "0.75rem",
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {m.content}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box
+                    sx={{
+                      px: isLarge ? 2 : 1.5,
+                      py: isLarge ? 1.5 : 1,
+                      borderRadius: 2,
+                      bgcolor: m.role === "user" ? "primary.main" : "background.paper",
+                      color: m.role === "user" ? "primary.contrastText" : "text.primary",
+                      border: m.role === "assistant" ? 1 : 0,
+                      borderColor: "divider",
+                      whiteSpace: "pre-wrap",
+                      fontSize: isLarge ? "1rem" : "0.875rem",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {m.content}
+                  </Box>
+                )}
               </Box>
             ))}
-            {loading && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <CircularProgress size={isLarge ? 22 : 18} />
-                <Typography variant="body2" color="text.secondary">
-                  Running scoped read-only query…
+            {loading && pendingQueryDebug && (
+              <Box
+                sx={{
+                  ...debugBubbleSx,
+                  width: "100%",
+                  px: isLarge ? 2 : 1.5,
+                  py: isLarge ? 1.5 : 1,
+                }}
+              >
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: pendingQueryDebug.sql ? 0.75 : 0 }}>
+                  <CircularProgress size={isLarge ? 18 : 14} sx={{ color: "text.secondary" }} />
+                  <Typography variant="caption" fontWeight={600} color="text.secondary" letterSpacing="0.06em">
+                    DEBUG
+                  </Typography>
+                </Stack>
+                <Typography variant="body2" color="text.primary" sx={{ mb: pendingQueryDebug.sql ? 0.5 : 0 }}>
+                  {pendingQueryDebug.label}
                 </Typography>
+                {pendingQueryDebug.sql && (
+                  <Typography
+                    variant="body2"
+                    component="pre"
+                    sx={{
+                      m: 0,
+                      fontFamily: "monospace",
+                      fontSize: isLarge ? "0.85rem" : "0.75rem",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {pendingQueryDebug.sql}
+                  </Typography>
+                )}
               </Box>
             )}
           </Stack>
