@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
+import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import AppLayout from "@/components/AppLayout";
 import { Column } from "@/components/DataTable";
 import InvoicesTable from "@/components/InvoicesTable";
@@ -35,6 +36,10 @@ const invoiceColumns: Column<Invoice>[] = [
 ];
 
 export default function CustomerDashboard() {
+  return <CustomerDashboardView mode="customer" />;
+}
+
+export function CustomerDashboardView({ mode }: { mode: "customer" | "support" }) {
   const [profile, setProfile] = useState<Customer | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,22 +65,27 @@ export default function CustomerDashboard() {
 
   if (error || !profile) {
     return (
-      <AppLayout title="My account">
+      <AppLayout title={mode === "support" ? "Customer support" : "My account"}>
         <Alert severity="error">{error ?? "Could not load profile"}</Alert>
       </AppLayout>
     );
   }
 
   const totalSpent = invoices.reduce((sum, i) => sum + Number(i.total), 0);
+  const isSupport = mode === "support";
 
   return (
     <AppLayout
-      title={`Welcome, ${profile.first_name}`}
-      subtitle="Your profile and purchase history — real account data for this customer."
+      title={isSupport ? "Customer support" : `Welcome, ${profile.first_name}`}
+      subtitle={
+        isSupport
+          ? `Assisting ${profile.first_name} ${profile.last_name} (#${profile.customer_id}) with masked customer data in a scoped read-only session.`
+          : "Your profile and purchase history — real account data for this customer."
+      }
       badge={
         <Chip
-          icon={<PersonIcon />}
-          label="Your account"
+          icon={isSupport ? <SupportAgentIcon /> : <PersonIcon />}
+          label={isSupport ? "Support mode" : "Your account"}
           size="small"
           sx={{ mr: 2, bgcolor: "rgba(255,255,255,0.15)", color: "white" }}
         />
@@ -126,7 +136,7 @@ export default function CustomerDashboard() {
 
         <Grid size={{ xs: 12 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Your invoices
+            {isSupport ? "Customer invoices" : "Your invoices"}
           </Typography>
           {invoices.length === 0 ? (
             <Alert severity="info">No invoices found.</Alert>
@@ -139,7 +149,7 @@ export default function CustomerDashboard() {
           )}
         </Grid>
       </Grid>
-      <SupportChat variant="customer" />
+      <SupportChat variant={isSupport ? "support" : "customer"} />
     </AppLayout>
   );
 }

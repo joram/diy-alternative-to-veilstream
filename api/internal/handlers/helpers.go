@@ -62,7 +62,7 @@ func (a *API) fetchInvoiceLines(r *http.Request, invoiceID int, masked bool) []m
 		schema = "mask"
 	}
 	q := fmt.Sprintf(`
-		SELECT il.invoice_line_id, il.invoice_id, il.track_id, il.quantity, il.unit_price,
+		SELECT il.invoice_line_id, il.invoice_id, il.track_id, il.quantity, il.unit_price, il.unit_cost,
 		       t.name AS track_name, al.title AS album_title, ar.name AS artist_name
 		FROM %s.invoice_line il
 		JOIN %s.track t ON t.track_id = il.track_id
@@ -72,7 +72,7 @@ func (a *API) fetchInvoiceLines(r *http.Request, invoiceID int, masked bool) []m
 		ORDER BY il.invoice_line_id`, schema, schema, schema, schema)
 	if !masked {
 		q = `
-		SELECT il.invoice_line_id, il.invoice_id, il.track_id, il.quantity, il.unit_price,
+		SELECT il.invoice_line_id, il.invoice_id, il.track_id, il.quantity, il.unit_price, il.unit_cost,
 		       t.name AS track_name, al.title AS album_title, ar.name AS artist_name
 		FROM public.invoice_line il
 		JOIN public.track t ON t.track_id = il.track_id

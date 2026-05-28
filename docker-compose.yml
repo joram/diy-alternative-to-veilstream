@@ -19,7 +19,6 @@ services:
       retries: 10
 
   ollama:
-    profiles: ["ollama"]
     image: ollama/ollama:latest
     container_name: chinook-ollama
     volumes:
@@ -34,7 +33,6 @@ services:
       start_period: 30s
 
   ollama-pull:
-    profiles: ["ollama"]
     image: ollama/ollama:latest
     container_name: chinook-ollama-pull
     depends_on:
@@ -51,15 +49,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      ollama-pull:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/chinook
       ADDR: ":8080"
       ADMIN_PASSWORD: password
       CORS_ORIGIN: ${FRONTEND_CORS_ORIGIN:-http://localhost:23082}
-      LLM_PROVIDER: ${LLM_PROVIDER:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-}
-      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-ollama}
+      OPENAI_MODEL: ${OPENAI_MODEL:-qwen2.5:1.5b}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-http://ollama:11434/v1}
       LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-120000}
       MAX_QUERY_ROWS: ${MAX_QUERY_ROWS:-200}
       MAX_SQL_LENGTH: ${MAX_SQL_LENGTH:-8000}

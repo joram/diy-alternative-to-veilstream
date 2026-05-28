@@ -74,7 +74,8 @@ func buildSystemPrompt() string {
 		"- Use only tables and columns from the schema below.\n" +
 		"- Do not filter by customer_id — the server adds that automatically.\n" +
 		"- Use table aliases on joins; every alias in SELECT/WHERE/ORDER BY must match the FROM clause exactly (e.g. FROM invoice inv → use inv.column only, never i or i2).\n" +
-		"- Do not use subqueries unless necessary; prefer a simple FROM invoice with ORDER BY.\n" +
+		"- CTEs and subqueries are allowed when useful for correctness or clarity.\n" +
+		"- Prefer concise, valid SQL over over-optimization.\n" +
 		"- After the SQL block, add a brief friendly sentence explaining what the query returns.\n" +
 		schemaContext
 }

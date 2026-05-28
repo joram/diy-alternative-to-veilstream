@@ -389,6 +389,135 @@ code {
   align-items: start;
 }
 
+.col-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.slide-with-rail {
+  position: relative;
+  min-height: 12rem;
+}
+
+.slide-rail-main {
+  width: 100%;
+}
+
+.slide-with-rail .side-rail {
+  position: fixed;
+  top: 50%;
+  right: clamp(0.75rem, 2.5vw, 2rem);
+  width: 11.5rem;
+  max-height: min(70vh, calc(100vh - 10rem));
+  overflow-y: auto;
+  padding: 0;
+  transform: translateY(-42%);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.side-rail--animate > * {
+  opacity: 0;
+  animation: requirementsFadeIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.side-rail--animate > *:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.side-rail--animate > *:nth-child(2) {
+  animation-delay: 0.35s;
+}
+.side-rail--animate > *:nth-child(3) {
+  animation-delay: 0.48s;
+}
+.side-rail--animate > *:nth-child(4) {
+  animation-delay: 0.6s;
+}
+.side-rail--animate > *:nth-child(5) {
+  animation-delay: 0.72s;
+}
+.side-rail--animate > *:nth-child(6) {
+  animation-delay: 0.84s;
+}
+.side-rail--animate > *:nth-child(7) {
+  animation-delay: 0.96s;
+}
+
+@keyframes requirementsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-rail--animate > * {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+.side-rail h3 {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin: 0 0 0.65rem;
+}
+
+.side-rail h4 {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 1rem 0 0.4rem;
+}
+
+.side-rail h4:first-of-type {
+  margin-top: 0;
+}
+
+.side-rail ul {
+  padding-left: 1rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin-bottom: 0.25rem;
+}
+
+.side-rail li {
+  margin-bottom: 0.45rem;
+}
+
+.side-rail li:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1100px) {
+  .slide-with-rail .side-rail {
+    position: static;
+    transform: none;
+    width: 100%;
+    max-height: none;
+    margin-bottom: 1.25rem;
+    overflow: visible;
+  }
+
+  .slide-with-rail {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+}
+
 @media (max-width: 768px) {
   .two-col {
     grid-template-columns: 1fr;

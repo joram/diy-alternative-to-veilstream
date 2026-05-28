@@ -18,14 +18,15 @@ type LogEntry struct {
 	ScopedSQL   string
 	ExecutedSQL string
 	RowCount    int
+	RejectReason string
 	Err         string
 }
 
 func logQuery(e LogEntry) {
 	if e.Err != "" {
 		log.Printf(
-			"[query] customer_id=%d source=%s view_mode=%s masked=%v rows=%d error=%s raw=%q scoped=%q executed=%q",
-			e.CustomerID, e.Source, e.ViewMode, e.Masked, e.RowCount, e.Err,
+			"[query] customer_id=%d source=%s view_mode=%s masked=%v rows=%d reject_reason=%s error=%s raw=%q scoped=%q executed=%q",
+			e.CustomerID, e.Source, e.ViewMode, e.Masked, e.RowCount, e.RejectReason, e.Err,
 			e.RawSQL, e.ScopedSQL, e.ExecutedSQL,
 		)
 		return

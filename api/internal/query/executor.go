@@ -3,6 +3,7 @@ package query
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -39,12 +40,14 @@ func ExecuteCustomerReadOnly(
 	}()
 
 	if err := Validate(rawSQL, maxLen); err != nil {
+		entry.RejectReason = classifyRejectReason(err)
 		entry.Err = err.Error()
 		return Result{}, err
 	}
 	scoped, err := Scope(customerID, rawSQL, masked)
 	if err != nil {
 		entry.ScopedSQL = scoped
+		entry.RejectReason = classifyRejectReason(err)
 		entry.Err = err.Error()
 		return Result{}, err
 	}
@@ -63,6 +66,7 @@ func ExecuteCustomerReadOnly(
 
 		if _, err := tx.Exec(ctx, "SELECT set_config('app.customer_id', $1, true)", fmt.Sprint(customerID)); err != nil {
 			_ = tx.Rollback(ctx)
+			entry.RejectReason = "session_scope_failed"
 			return Result{}, fmt.Errorf("set customer scope: %w", err)
 		}
 		if useRLS {
@@ -83,6 +87,7 @@ func ExecuteCustomerReadOnly(
 		rows, err := tx.Query(ctx, limited)
 		if err != nil {
 			_ = tx.Rollback(ctx)
+			entry.RejectReason = classifyRejectReason(err)
 			entry.Err = err.Error()
 			return Result{}, fmt.Errorf("execute: %w", err)
 		}
@@ -114,6 +119,7 @@ func ExecuteCustomerReadOnly(
 		}
 		rows.Close()
 		if err := tx.Commit(ctx); err != nil {
+			entry.RejectReason = "tx_commit_failed"
 			entry.Err = err.Error()
 			return Result{}, err
 		}
@@ -124,5 +130,35 @@ func ExecuteCustomerReadOnly(
 			RowCount:  len(out),
 			ScopedSQL: scoped,
 		}, nil
+	}
+}
+
+func classifyRejectReason(err error) string {
+	msg := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(msg, "only select queries are allowed"):
+		return "non_select_query"
+	case strings.Contains(msg, "single statement"):
+		return "multi_statement_query"
+	case strings.Contains(msg, "forbidden keywords"):
+		return "forbidden_keyword"
+	case strings.Contains(msg, "system catalogs are not allowed"):
+		return "system_catalog_access"
+	case strings.Contains(msg, "maximum length"):
+		return "query_too_long"
+	case strings.Contains(msg, "empty query"):
+		return "empty_query"
+	case strings.Contains(msg, "table") && strings.Contains(msg, "not allowed"):
+		return "disallowed_table"
+	case strings.Contains(msg, "schema tables are allowed"):
+		return "schema_violation"
+	case strings.Contains(msg, "query must reference customer, invoice, or invoice_line"):
+		return "missing_customer_scope_anchor"
+	case strings.Contains(msg, "could not find tables in query"):
+		return "no_table_detected"
+	case strings.Contains(msg, "execute:"):
+		return "execution_error"
+	default:
+		return "rejected"
 	}
 }

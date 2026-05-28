@@ -52,6 +52,32 @@ func TestScopeAppendsToExistingWhere(t *testing.T) {
 	}
 }
 
+func TestScopeTrackWithoutInvoiceLineJoin(t *testing.T) {
+	scoped, err := Scope(7, "SELECT track_id, name FROM track ORDER BY name", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !containsAll(scoped, "mask.track", "ORDER BY name") {
+		t.Fatalf("unexpected scope: %s", scoped)
+	}
+	if contains(scoped, "customer_id = 7") {
+		t.Fatalf("unexpected scope: %s", scoped)
+	}
+}
+
+func TestScopeAlbumWithoutInvoiceLineJoin(t *testing.T) {
+	scoped, err := Scope(9, "SELECT album_id, title FROM album ORDER BY title", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !containsAll(scoped, "public.album", "ORDER BY title") {
+		t.Fatalf("unexpected scope: %s", scoped)
+	}
+	if contains(scoped, "customer_id = 9") {
+		t.Fatalf("unexpected scope: %s", scoped)
+	}
+}
+
 func TestValidateRejectsDrop(t *testing.T) {
 	if err := Validate("DROP TABLE customer", 8000); err == nil {
 		t.Fatal("expected error")

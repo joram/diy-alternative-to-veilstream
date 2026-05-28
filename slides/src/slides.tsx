@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 const REPO_URL = "https://github.com/joram/diy-alternative-to-veilstream";
 const SITE_URL = "https://john.oram.ca";
-const PROFILE_IMAGE = "/profile.jpg";
+const PROFILE_IMAGE = "/1730243156513.jpeg";
 
 export type Slide = {
   id: string;
@@ -84,11 +84,54 @@ export const slides: Slide[] = [
             </p>
           </div>
         </header>
-        <p className="muted">
-          This talk&apos;s DIY stack is what you might wire up yourself; VeilStream is the hosted layer
-          for masking, policy, and audit on preview environments.
-        </p>
       </div>
+    ),
+  },
+  {
+    id: "why",
+    section: "Why",
+    content: (
+      <>
+        <h2>Why this talk?</h2>
+        <p className="lead">
+          I built this repo as <strong>competitive analysis</strong> — a working DIY version of the
+          same problem VeilStream solves — and thought it was worth sharing openly.
+        </p>
+        <div className="two-col">
+          <div className="card card-warn">
+            <h3>What I set out to learn</h3>
+            <ul>
+              <li>What teams actually wire up when they roll their own safe DB access</li>
+              <li>Where masking, RLS, and scoped SQL get painful to operate</li>
+              <li>What a credible DIY stack looks like end-to-end</li>
+            </ul>
+          </div>
+          <div className="card card-safe">
+            <h3>Why share it</h3>
+            <ul>
+              <li>Side-by-side with VeilStream — same patterns, different operational model</li>
+              <li>Honest look at build vs. buy for preview envs and production-like data</li>
+              <li>Useful whether you DIY, use VeilStream, or mix both</li>
+            </ul>
+          </div>
+        </div>
+        <p className="muted center">
+          This deck is the DIY path in code; VeilStream is the hosted layer for masking, policy, and
+          audit on preview environments.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "why",
+    section: "Why",
+    content: (
+      <>
+        <h2>Tour the demo project</h2>
+        <p className="lead">
+          Let's take a tour of the demo project and see how it works.
+        </p>
+      </>
     ),
   },
   {
@@ -99,24 +142,12 @@ export const slides: Slide[] = [
         <h2>The tension</h2>
         <div className="two-col">
           <div className="card card-warn">
-            <h3>Teams need deep access</h3>
-            <ul>
-              <li>Support logs in <em>as the customer</em> to debug billing and orders</li>
-              <li>Product adds an <em>LLM chat</em> that answers questions from live data</li>
-            </ul>
+            <h3>Teams have use cases for access</h3>
           </div>
           <div className="card card-safe">
-            <h3>Production has secrets</h3>
-            <ul>
-              <li>PII: names, emails, addresses, phones</li>
-              <li>Business data: unit costs, internal notes, margins</li>
-              <li>Other customers&apos; rows — must never leak across tenants</li>
-            </ul>
+            <h3>Production has secrets that must be protected</h3>
           </div>
         </div>
-        <p className="lead center">
-          Goal: <strong>realistic debugging</strong> without handing anyone a raw SQL superuser.
-        </p>
       </>
     ),
   },
@@ -124,31 +155,55 @@ export const slides: Slide[] = [
     id: "overview",
     section: "Overview",
     content: (
-      <>
-        <h2>Two use cases in this repo</h2>
-        <div className="use-case-grid">
-          <article className="uc-card uc-support">
-            <span className="uc-badge">Use case 1</span>
-            <h3>Customer support</h3>
-            <p>Agent views a customer&apos;s account with <strong>masked PII</strong> — enough context to help, not enough to exfiltrate.</p>
-            <ul>
-              <li>postgresql_anonymizer (PGanon)</li>
-              <li>Security labels on columns</li>
-              <li>Dynamic masking → <code>mask.*</code> views</li>
-            </ul>
-          </article>
-          <article className="uc-card uc-llm">
-            <span className="uc-badge">Use case 2</span>
-            <h3>LLM chat window</h3>
-            <p>Natural-language questions become SQL — we must <strong>scope every query</strong> to one customer and block writes.</p>
-            <ul>
-              <li>Row-level security (RLS)</li>
-              <li>Read-only transactions</li>
-              <li>API-side scoping + allowlists</li>
-            </ul>
-          </article>
+      <div className="slide-with-rail">
+        <aside className="side-rail side-rail--animate" aria-label="Project requirements">
+          <h3>Project requirements</h3>
+          <h4>Use case 1 - Talk with a human</h4>
+          <ul>
+            <li>Support impersonation</li>
+            <li>Only show the customer's data</li>
+            <li>Prevent the support human from modifying the data</li>
+            <li>read only access ?</li>
+          </ul>
+          
+          <h4>Use case 2 - Chat with an LLM</h4>
+          <ul>
+            <li>LLM chat</li>
+            <li>Hide sensitive columns from the LLM (RLS)</li>
+            <li>Only show the customer's data</li>
+            <li>read only access</li>
+          </ul>
+
+          <h4>Shared requirements</h4>
+          <ul>
+            <li>Tenant isolation</li>
+            <li>No superuser</li>
+            <li>Easy maintainability</li>
+          </ul>
+
+        </aside>
+        <div className="slide-rail-main">
+          <h2>Feature requests in the project</h2>
+          <div className="use-case-grid">
+            <article className="uc-card uc-support">
+              <span className="uc-badge">Use case 1</span>
+              <h3>Talk with a human</h3>
+              <p>
+                As a customer, I want to contact support humans about billing, orders, or account access. The support human needs
+                to see the account <em>as the customer sees it</em> to reproduce and fix the issue.
+              </p>
+            </article>
+            <article className="uc-card uc-llm">
+              <span className="uc-badge">Use case 2</span>
+              <h3>Chat with an LLM</h3>
+              <p>
+                As a user, I want to ask account questions in plain English inside the product. The app generates
+                SQL and runs it against live, production-shaped data to answer.
+              </p>
+            </article>
+          </div>
         </div>
-      </>
+      </div>
     ),
   },
   {
@@ -156,20 +211,20 @@ export const slides: Slide[] = [
     section: "Use case 1",
     content: (
       <>
-        <h2>Support impersonation</h2>
+        <h2>Use case 1 - Talk with a human</h2>
         <p className="lead">
-          Someone from support wants to help debug the user&apos;s problems by logging in
+          As a support human, I want to help debug the user&apos;s problems by logging in
           &ldquo;as them.&rdquo;
         </p>
         <div className="flow-diagram">
-          <div className="flow-node">Support agent</div>
+          <div className="flow-node">Support human</div>
           <div className="flow-arrow">→</div>
-          <div className="flow-node highlight">Customer context</div>
+          <div className="flow-node highlight">Customer view</div>
           <div className="flow-arrow">→</div>
-          <div className="flow-node">Chinook DB</div>
+          <div className="flow-node">Production database</div>
         </div>
         <p>
-          Sensitive columns stay in Postgres — we <strong>anonymize at read time</strong> via
+          Sensitive columns stay in the production database — we <strong>anonymize at read time</strong> via
           dynamic masking instead of copying redacted data to a warehouse.
         </p>
       </>
@@ -267,14 +322,49 @@ SELECT anon.start_dynamic_masking();`}</Code>
     ),
   },
   {
+    id: "uc1-red-flags",
+    section: "Use case 1",
+    content: (
+      <>
+        <h2>Big Red Flags</h2>
+        <ul className="big-list">
+          <li>
+            <strong>Custom Postgres image</strong> — PGanon is not in stock Postgres; you own the
+            build and upgrades.
+          </li>
+          <li>
+            <strong>Managed Postgres</strong> — dynamic masking is off the table on RDS and most
+            hosted providers.
+          </li>
+          <li>
+            <strong>Label drift</strong> — every new column needs a security label or it stays
+            exposed in <code>mask.*</code>.
+          </li>
+          <li>
+            <strong>Schema footguns</strong> — one wrong <code>search_path</code> and support queries
+            real PII from <code>public</code>.
+          </li>
+          <li>
+            <strong>Live infrastructure</strong> — dynamic masking is runtime ops, not a one-time
+            migration.
+          </li>
+          <li>
+            <strong>Package availability</strong> — <code>postgresql_anonymizer_18</code> is not on
+            every distro yet.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
     id: "uc2-scenario",
     section: "Use case 2",
     content: (
       <>
-        <h2>LLM chat over live data</h2>
+        <h2>Use case 2 - Chat with an LLM</h2>
         <p className="lead">
-          Users ask questions in plain English; the app generates SQL and runs it against
-          production-shaped data.
+          As a user, I want to ask questions in plain English; the app generates SQL and runs it against
+          production-shaped data to answer my questions.
         </p>
         <div className="chat-demo">
           <div className="chat-bubble user">What were my most recent invoices?</div>
@@ -341,57 +431,25 @@ SELECT * FROM (%s) AS scoped_query LIMIT %d;`}</Code>
       </>
     ),
   },
+
   {
-    id: "uc2-demos",
+    id: "uc2-red-flags",
     section: "Use case 2",
     content: (
       <>
-        <h2>Demo prompts to try live</h2>
-        <div className="demo-grid">
-          <div className="demo-item good">
-            <span className="demo-label">Safe-ish</span>
-            <p>What were my most recent invoices?</p>
-          </div>
-          <div className="demo-item good">
-            <span className="demo-label">Safe-ish</span>
-            <p>How much did Fred spend?</p>
-          </div>
-          <div className="demo-item good">
-            <span className="demo-label">Margin probe</span>
-            <p>Margins on latest invoice?</p>
-            <p className="muted small">unit_cost masked → NULL</p>
-          </div>
-          <div className="demo-item bad">
-            <span className="demo-label">Attack</span>
-            <p><code>select * from customer where customer_id = 3</code></p>
-          </div>
-        </div>
-        <p className="center lead">Run the stack: <code>docker compose up</code> → Support chat in the UI</p>
-      </>
-    ),
-  },
-  {
-    id: "caveats",
-    section: "Operations",
-    content: (
-      <>
-        <h2>What breaks in the real world?</h2>
+        <h2>More Big Red Flags</h2>
         <ul className="big-list">
           <li>
-            <strong>New tables or columns</strong> — migrations need new security labels, RLS policies, and
-            allowlist entries in the API.
+            <strong>LLM creativity</strong> — models will invent joins, bypass filters, and probe
+            margins; prompt engineering is not a control.
           </li>
           <li>
-            <strong>Managed Postgres</strong> — PGanon dynamic masking may be off the table (RDS); you need a
-            different masking strategy.
+            <strong>RLS is the last line</strong> — validation, scoping, and limits in the API must
+            come first.
           </li>
           <li>
-            <strong>LLM creativity</strong> — validation, scoping, and limits are non-negotiable; RLS is the
-            last line, not the only one.
-          </li>
-          <li>
-            <strong>VeilStream</strong> — this repo is the DIY path; a hosted layer can own masking, policy,
-            and audit without you operating extensions.
+            <strong>Schema drift</strong> — new tables need RLS policies and allowlist entries in the
+            API or they are wide open.
           </li>
         </ul>
       </>
@@ -407,21 +465,6 @@ SELECT * FROM (%s) AS scoped_query LIMIT %d;`}</Code>
             github.com/joram/diy-alternative-to-veilstream
           </a>
         </p>
-        <p className="lead center">Contact</p>
-        <ul style={{ textAlign: "left", maxWidth: "36rem", margin: "0 auto 1.25rem" }}>
-          <li>@john in yyjtech Slack</li>
-          <li>
-            <a href="mailto:john@veilstream.com">john@veilstream.com</a> (work)
-          </li>
-          <li>
-            <a href="mailto:john@oram.ca">john@oram.ca</a> (personal)
-          </li>
-          <li>
-            <a href="https://www.linkedin.com/in/john-oram/" target="_blank" rel="noreferrer">
-              linkedin.com/in/john-oram
-            </a>
-          </li>
-        </ul>
         <p className="muted center">Run the demo: <code>docker compose up</code></p>
         <div className="thanks-links">
           <a href={REPO_URL} target="_blank" rel="noreferrer">
